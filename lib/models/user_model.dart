@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class User extends Equatable {
+class UserModel extends Equatable {
 
   final String id;
   final String email;
@@ -8,10 +8,10 @@ class User extends Equatable {
   final String hobby;
   final int balance;
 
-  User({
+  UserModel({
     required this.id,
     required this.email,
-    this.name = '',
+    required this.name,
     this.hobby = '',
     this.balance = 0
   });
