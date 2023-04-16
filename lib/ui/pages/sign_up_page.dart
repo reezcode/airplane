@@ -37,7 +37,7 @@ class SignUpPage extends StatelessWidget{
         return BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state){
             if(state is AuthSuccess){
-              Navigator.pushNamedAndRemoveUntil(context, '/bonus', (route) => false);
+              Navigator.pushNamedAndRemoveUntil(context, '/bonus-page', (route) => false);
             } else if (state is AuthFailed){
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
