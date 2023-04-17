@@ -1,7 +1,9 @@
 import 'package:airplane/cubit/auth_cubit.dart';
+import 'package:airplane/cubit/destination_cubit.dart';
 import 'package:airplane/cubit/page_cubit.dart';
 import 'package:airplane/ui/pages/bonus_page.dart';
 import 'package:airplane/ui/pages/main_page.dart';
+import 'package:airplane/ui/pages/sign_in_page.dart';
 import 'package:airplane/ui/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'ui/pages/splash_page.dart';
@@ -27,6 +29,8 @@ class MyApp extends StatelessWidget{
         BlocProvider(create: (context) => PageCubit(),
         ),
         BlocProvider(create: (context) => AuthCubit(),
+        ),
+        BlocProvider(create: (context) => DestinationCubit()
         )
       ],
       child: MaterialApp(
@@ -37,6 +41,7 @@ class MyApp extends StatelessWidget{
           '/sign-up': (context) => SignUpPage(),
           '/bonus-page': (context) => BonusPage(),
           '/main': (context) => MainPage(),
+          '/sign-in': (context) => SignInPage(),
         },
       ),
     );
