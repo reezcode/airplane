@@ -1,11 +1,19 @@
+import 'package:airplane/cubit/auth_cubit.dart';
+import 'package:airplane/cubit/transaction_cubit.dart';
+import 'package:airplane/models/transaction_model.dart';
 import 'package:airplane/shared/theme.dart';
 import 'package:airplane/ui/pages/success_checkout_page.dart';
 import 'package:airplane/ui/widgets/booking_details_item.dart';
 import 'package:airplane/ui/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 class CheckoutPage extends StatelessWidget{
-  const CheckoutPage({Key? key}) : super(key: key);
+
+  final TransactionModel transactionModel;
+
+  const CheckoutPage(this.transactionModel, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -103,8 +111,8 @@ class CheckoutPage extends StatelessWidget{
                   decoration: BoxDecoration(
                     image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: AssetImage(
-                          'assets/image_destination1.png',
+                        image: NetworkImage(
+                          transactionModel.destination.imageUrl,
                         )
                     ),
                     borderRadius: BorderRadius.circular(18),
@@ -115,7 +123,7 @@ class CheckoutPage extends StatelessWidget{
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Lake Ciliwung',
+                        transactionModel.destination.name,
                         style: blackTextStyle.copyWith(
                           fontSize: 18,
                           fontWeight: medium,
@@ -125,7 +133,7 @@ class CheckoutPage extends StatelessWidget{
                         height: 5,
                       ),
                       Text(
-                        'Tangerang',
+                        transactionModel.destination.city,
                         style: greyTextStyle.copyWith(
                             fontWeight: light
                         ),
@@ -153,7 +161,7 @@ class CheckoutPage extends StatelessWidget{
                       ),
                     ),
                     Text(
-                      '4.8',
+                      transactionModel.destination.rating.toString(),
                       style: blackTextStyle.copyWith(
                           fontWeight: medium
                       ),
@@ -177,37 +185,45 @@ class CheckoutPage extends StatelessWidget{
             // ITEMS
             BookingDetailsItem(
               title: 'Traveler',
-              valueText: '2 person',
+              valueText: '${transactionModel.amountOfTraveler} person',
               color: kBlackColor,
             ),
             BookingDetailsItem(
               title: 'Seat',
-              valueText: 'A3, B3',
+              valueText: transactionModel.selectedSeats,
               color: kBlackColor,
             ),
             BookingDetailsItem(
               title: 'Insurance',
-              valueText: 'YES',
-              color: kGreenColor,
+              valueText: transactionModel.insurance ? 'YES' : 'NO',
+              color: transactionModel.insurance ? kGreenColor : kRedColor,
             ),
             BookingDetailsItem(
               title: 'Refundable',
-              valueText: 'NO',
-              color: kRedColor,
+              valueText: transactionModel.refundable ? 'YES' : 'NO',
+              color: transactionModel.refundable ? kGreenColor : kRedColor,
             ),
             BookingDetailsItem(
               title: 'VAT',
-              valueText: '45%',
+              valueText: '${(transactionModel.vat * 100).toStringAsFixed(0)}%',
               color: kBlackColor,
             ),
             BookingDetailsItem(
               title: 'Price',
-              valueText: 'IDR 8.500.690',
+              valueText: NumberFormat.currency(
+                locale: 'id',
+                symbol: 'IDR ',
+                decimalDigits: 0,
+              ).format(transactionModel.price),
               color: kBlackColor,
             ),
             BookingDetailsItem(
               title: 'Grand Total',
-              valueText: 'IDR 12.000.000',
+              valueText: NumberFormat.currency(
+                locale: 'id',
+                symbol: 'IDR ',
+                decimalDigits: 0,
+              ).format(transactionModel.grandTotal),
               color: kPrimaryColor,
             ),
           ],
@@ -216,111 +232,152 @@ class CheckoutPage extends StatelessWidget{
     }
 
     Widget paymentDetails(){
-      return Container(
-        margin: EdgeInsets.only(top: 30),
-        padding: EdgeInsets.symmetric(
-          vertical: 30,
-          horizontal: 20
-        ),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: kWhiteColor
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Payment Details',
-              style: blackTextStyle.copyWith(
-                fontWeight: semiBold,
-                fontSize: 16
+      return BlocBuilder<AuthCubit, AuthState>(
+        builder: (context, state) {
+          if(state is AuthSuccess){
+            return Container(
+              margin: EdgeInsets.only(top: 30),
+              padding: EdgeInsets.symmetric(
+                  vertical: 30,
+                  horizontal: 20
               ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 16),
-              child: Row(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: kWhiteColor
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 100,
-                    height: 70,
-                    margin: EdgeInsets.only(right: 16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      image: DecorationImage(
-                        image: AssetImage(
-                          'assets/image_card.png'
-                        ),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            margin: EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: AssetImage(
-                                  'assets/icon_plane.png',
-                                )
-                              )
-                            ),
-                          ),
-                          Text(
-                            'Pay',
-                            style: whiteTextStyle.copyWith(
-                              fontSize: 16,
-                              fontWeight: medium
-                            ),
-                          )
-                        ],
-                      ),
+                  Text(
+                    'Payment Details',
+                    style: blackTextStyle.copyWith(
+                        fontWeight: semiBold,
+                        fontSize: 16
                     ),
                   ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Container(
+                    margin: EdgeInsets.only(top: 16),
+                    child: Row(
                       children: [
-                        Text(
-                          'IDR 80.400.000',
-                          style: blackTextStyle.copyWith(
-                            fontWeight: medium,
-                            fontSize: 18
+                        Container(
+                          width: 100,
+                          height: 70,
+                          margin: EdgeInsets.only(right: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/image_card.png'
+                              ),
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          'Current Balance',
-                          style: greyTextStyle.copyWith(
-                            fontWeight: light
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: EdgeInsets.only(right: 6),
+                                  decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                            'assets/icon_plane.png',
+                                          )
+                                      )
+                                  ),
+                                ),
+                                Text(
+                                  'Pay',
+                                  style: whiteTextStyle.copyWith(
+                                      fontSize: 16,
+                                      fontWeight: medium
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
-                        )
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                NumberFormat.currency(
+                                  locale: 'id',
+                                  symbol: 'IDR ',
+                                  decimalDigits: 0,
+                                ).format(state.user.balance),
+                                style: blackTextStyle.copyWith(
+                                    fontWeight: medium,
+                                    fontSize: 18
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                'Current Balance',
+                                style: greyTextStyle.copyWith(
+                                    fontWeight: light
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
-            )
-          ],
-        ),
+            );
+          } else {
+            return Center(
+              child: Text(
+                'Harga gagal dimuat'
+              ),
+            );
+          }
+        }
       );
     }
 
     Widget payNowButton(){
-      return CustomButton(
-          title: 'Pay Now',
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => SuccessCheckoutPage()));
-          },
-          margin: EdgeInsets.only(
-            top: 30
-          ),
+      return BlocConsumer<TransactionCubit, TransactionState>(
+        listener: (context, state){
+          if(state is TransactionSuccess){
+            Navigator.pushNamedAndRemoveUntil(context, '/success', (route) => false);
+          } else if(state is TransactionFailed){
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: kRedColor,
+                content: Text(state.error),
+              )
+            );
+          }
+        },
+        builder: (context, state) {
+
+          if(State is TransactionLoading){
+            return Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.only(top: 30),
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          return CustomButton(
+              title: 'Pay Now',
+              onPressed: () {
+                context.read<TransactionCubit>().createTransaction(transactionModel);
+              },
+              margin: EdgeInsets.only(
+                top: 30
+              ),
+          );
+        }
       );
     }
 
